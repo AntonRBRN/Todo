@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <link rel="stylesheet" href="to do.css">
+        
+        <!-- Useful meta tags -->
+        <meta http-equiv="x-ua-compatible" content="ie=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+        <meta name="robots" content="noindex, nofollow">
+        <meta name="google" content="notranslate">
+        <meta name="format-detection" content="telephone=no">
+        <meta name="description" content="">
+        
+        <title>to do</title>
+    </head>
+
+    <body>
+        <div id="inputTaskBlock">
+            <input id="inputNewTask" type="text" placeholder="Ваше дело" onkeydown="pushAddButton(event)">
+            <button id="pushTask">Создать задачу!</button>
+        </div>
+        <div class="tasksList" id="tasksList">
+        </div>
+    </body>
+
+
+    <script src="to do.js"></script>
+
+</html>
