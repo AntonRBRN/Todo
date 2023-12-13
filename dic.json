@@ -3,32 +3,26 @@
       {
           "eng": "Table",
           "rus": "Стол",
-          "type": "Мебель"
       },
       {
           "eng": "Cat",
           "rus": "Кошка",
-          "type": "Животные"
       },
       {
           "eng": "Dog",
           "rus": "Собака",
-          "type": "Животные"
       },
       {
           "eng": "Tooth",
           "rus": "Зуб",
-          "type": "Части тела"
       },
       {
           "eng": "Living room",
           "rus": "Спальня",
-          "type": "Жильё"
       },
       {
           "eng": "Apple",
           "rus": "Яблоко",
-          "type": "Еда"
       }
   ]
 }
