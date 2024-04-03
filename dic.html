@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -11,7 +12,8 @@
             margin: 50px;
         }
 
-        input[type="text"], input[type="text"] {
+        input[type="text"],
+        input[type="text"] {
             padding: 10px;
             margin: 5px;
         }
@@ -33,13 +35,17 @@
             border-collapse: collapse;
         }
 
-        th, td {
+        th,
+        td {
             border: 1px solid #ddd;
             padding: 10px;
             text-align: left;
         }
 
-        .delete-button, .save-button, .edit-button {
+        .delete-button,
+        .save-button,
+        .edit-button,
+        .new-word-button {
             background-color: #4CAF50;
             color: white;
             border: none;
@@ -56,232 +62,277 @@
             background-color: yellow;
         }
 
+        .hidden {
+            display: none;
+        }
     </style>
 </head>
+
 <body>
 
     <h1>Русско-Английский Словарь</h1>
 
-    <label for="russianWord">Русское слово:</label>
-    <input type="text" id="russianWord" placeholder="Введите русское слово">
-    
-    <label for="englishTranslation">Английский перевод:</label>
-    <input type="text" id="englishTranslation" placeholder="Введите английский перевод">
+    <button id="newWordButton" class="new-word-button">Новое слово</button>
 
-    <label for="wordType">Тип слова:</label>
-    <select id="wordType">
-        <option value="существительное">Существительное</option>
-        <option value="прилагательное">Прилагательное</option>
-        <option value="глагол">Глагол</option>
-    </select>
+    <div id="wordForm" class="hidden">
+        <label for="russianWord">Русское слово:</label>
+        <input type="text" id="russianWord" placeholder="Введите русское слово">
 
-    <label for="comment">Комментарий:</label>
-    <input type="text" id="comment" placeholder="Введите комментарий">
+        <label for="englishTranslation">Английский перевод:</label>
+        <input type="text" id="englishTranslation" placeholder="Введите английский перевод">
 
-    <button onclick="addWord()">+</button>
-    <button onclick="saveDictionary()">Сохранить в JSON</button>
-    <button onclick="loadDictionary()">Загрузить из JSON</button>
+        <label for="wordType">Тип слова:</label>
+        <select id="wordType">
+            <option value="существительное">Существительное</option>
+            <option value="прилагательное">Прилагательное</option>
+            <option value="глагол">Глагол</option>
+        </select>
+
+        <label for="comment">Комментарий:</label>
+        <input type="text" id="comment" placeholder="Введите комментарий">
+
+        <button id="addButton">+</button>
+    </div>
+
+    <button id="saveButton">Сохранить в JSON</button>
+    <button id="loadButton">Загрузить из JSON</button>
 
     <label for="searchInput">Поиск:</label>
-    <input type="text" id="searchInput" oninput="searchWord()" placeholder="Введите слово для поиска">
+    <input type="text" id="searchInput" placeholder="Введите слово для поиска">
 
     <table id="dictionary">
         <tr>
-            <th onclick="sortDictionary('russian')">Русское слово</th>
-            <th onclick="sortDictionary('english')">Английский перевод</th>
-            <th onclick="sortDictionary('type')">Тип слова</th>
-            <th onclick="sortDictionary('comment')">Комментарий</th>
+            <th data-sort="russian">Русское слово</th>
+            <th data-sort="english">Английский перевод</th>
+            <th data-sort="type">Тип слова</th>
+            <th data-sort="comment">Комментарий</th>
             <th>Действия</th>
         </tr>
     </table>
 
     <script>
-        let dictionary = [];
+        document.addEventListener('DOMContentLoaded', function () {
+            const dictionaryApp = {
+                dictionary: [],
 
-        function addWord() {
-            const russianWordInput = document.getElementById('russianWord');
-            const englishTranslationInput = document.getElementById('englishTranslation');
-            const wordTypeSelect = document.getElementById('wordType');
-            const commentInput = document.getElementById('comment');
+                init: function () {
+                    this.setupEventListeners();
+                    this.renderDictionary();
+                },
 
-            const russianWord = formatWord(russianWordInput.value.trim());
-            const englishTranslation = formatWord(englishTranslationInput.value.trim());
-            const wordType = formatWord(wordTypeSelect.value);
-            const comment = commentInput.value.trim();
+                addWord: function () {
+                    const russianWordInput = document.getElementById('russianWord');
+                    const englishTranslationInput = document.getElementById('englishTranslation');
+                    const wordTypeSelect = document.getElementById('wordType');
+                    const commentInput = document.getElementById('comment');
 
-            if (russianWord !== '' || englishTranslation !== '') {
-                dictionary.push({ russian: russianWord, english: englishTranslation, type: wordType, comment: comment });
-                sortDictionary('russian');
-                renderDictionary();
-                russianWordInput.value = '';
-                englishTranslationInput.value = '';
-                wordTypeSelect.value = 'существительное';
-                commentInput.value = '';
-            }
-        }
+                    const russianWord = this.formatWord(russianWordInput.value.trim());
+                    const englishTranslation = this.formatWord(englishTranslationInput.value.trim());
+                    const wordType = this.formatWord(wordTypeSelect.value);
+                    const comment = commentInput.value.trim();
 
-        function renderDictionary(filteredDictionary) {
-            const table = document.getElementById('dictionary');
-            table.innerHTML = '<tr><th onclick="sortDictionary(\'russian\')">Русское слово</th><th onclick="sortDictionary(\'english\')">Английский перевод</th><th onclick="sortDictionary(\'type\')">Тип слова</th><th onclick="sortDictionary(\'comment\')">Комментарий</th><th>Действия</th></tr>';
-
-            const displayDictionary = filteredDictionary || dictionary;
-
-            displayDictionary.forEach((entry, index) => {
-                const row = table.insertRow();
-                const cell1 = row.insertCell(0);
-                const cell2 = row.insertCell(1);
-                const cell3 = row.insertCell(2);
-                const cell4 = row.insertCell(3);
-                const cell5 = row.insertCell(4);
-
-                const russianInput = createInput('text', entry.russian, true);
-                const englishInput = createInput('text', entry.english, true);
-                const typeInput = createInput('text', entry.type, true);
-                const commentInput = createInput('text', entry.comment, true);
-
-                cell1.appendChild(russianInput);
-                cell2.appendChild(englishInput);
-                cell3.appendChild(typeInput);
-                cell4.appendChild(commentInput);
-
-                const editButton = createButton('✎', 'edit-button', () => enableEdit(index));
-                const deleteButton = createButton('❌', 'delete-button', () => deleteWord(index));
-
-                cell5.appendChild(editButton);
-                cell5.appendChild(deleteButton);
-            });
-        }
-
-        function createInput(type, value, disabled) {
-            const input = document.createElement('input');
-            input.type = type;
-            input.value = value;
-            input.disabled = disabled;
-            return input;
-        }
-
-        function createButton(text, className, clickHandler) {
-            const button = document.createElement('button');
-            button.innerText = text;
-            button.classList.add(className);
-            button.onclick = clickHandler;
-            return button;
-        }
-
-        function sortDictionary(field) {
-            dictionary.sort((a, b) => (a[field] > b[field]) ? 1 : -1);
-            renderDictionary();
-        }
-
-        function searchWord() {
-            const searchInput = document.getElementById('searchInput');
-            const searchQuery = searchInput.value.trim().toLowerCase();
-
-            const filteredDictionary = dictionary.filter(entry =>
-                entry.russian.toLowerCase().includes(searchQuery) || 
-                entry.english.toLowerCase().includes(searchQuery) ||
-                entry.type.toLowerCase().includes(searchQuery) ||
-                entry.comment.toLowerCase().includes(searchQuery)
-            );
-
-            renderDictionary(filteredDictionary);
-        }
-
-        function formatWord(word) {
-            return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
-        }
-
-        function deleteWord(index) {
-            const confirmDelete = confirm('Вы уверены, что хотите удалить это слово?');
-
-            if (confirmDelete) {
-                dictionary.splice(index, 1);
-                renderDictionary();
-            }
-        }
-
-        function enableEdit(index) {
-            const table = document.getElementById('dictionary');
-            const row = table.rows[index + 1];
-
-            row.classList.add('editing-row');
-
-            for (let i = 0; i < row.cells.length - 1; i++) {
-                const cell = row.cells[i];
-                const input = cell.firstChild;
-                input.disabled = false;
-            }
-
-            const editButton = row.cells[row.cells.length - 1].querySelector('.edit-button');
-            editButton.innerText = '✔';
-            editButton.classList.remove('edit-button');
-            editButton.classList.add('save-button');
-            editButton.onclick = () => saveEdit(index);
-        }
-
-        function saveEdit(index) {
-            const table = document.getElementById('dictionary');
-            const row = table.rows[index + 1];
-
-            const russianInput = row.cells[0].firstChild;
-            const englishInput = row.cells[1].firstChild;
-            const typeInput = row.cells[2].firstChild;
-            const commentInput = row.cells[3].firstChild;
-
-            const editedRussian = formatWord(russianInput.value.trim());
-            const editedEnglish = formatWord(englishInput.value.trim());
-            const editedType = formatWord(typeInput.value.trim());
-            const editedComment = commentInput.value.trim();
-
-            dictionary[index] = { russian: editedRussian, english: editedEnglish, type: editedType, comment: editedComment };
-
-            renderDictionary();
-            row.classList.remove('editing-row');
-        }
-
-        function saveDictionary() {
-            const jsonContent = JSON.stringify(dictionary, null, 2);
-            const blob = new Blob([jsonContent], { type: 'application/json' });
-
-            // Create a link element and trigger a click to download the file
-            const a = document.createElement('a');
-            a.href = URL.createObjectURL(blob);
-            a.download = 'dictionary.json';
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-        }
-
-        function loadDictionary() {
-            const input = document.createElement('input');
-            input.type = 'file';
-            input.accept = '.json';
-            input.addEventListener('change', handleFileSelect);
-            input.click();
-        }
-
-        function handleFileSelect(event) {
-            const file = event.target.files[0];
-
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function (e) {
-                    try {
-                        const jsonData = JSON.parse(e.target.result);
-                        if (Array.isArray(jsonData)) {
-                            dictionary = jsonData;
-                            renderDictionary();
-                        } else {
-                            alert('Некорректный формат файла.');
-                        }
-                    } catch (error) {
-                        alert('Ошибка при чтении файла.');
+                    if (russianWord !== '' || englishTranslation !== '') {
+                        this.dictionary.push({ russian: russianWord, english: englishTranslation, type: wordType, comment: comment });
+                        this.sortDictionary('russian');
+                        this.renderDictionary();
+                        russianWordInput.value = '';
+                        englishTranslationInput.value = '';
+                        wordTypeSelect.value = 'существительное';
+                        commentInput.value = '';
                     }
-                };
-                reader.readAsText(file);
-            }
-        }
+                },
+
+                renderDictionary: function (filteredDictionary) {
+                    const table = document.getElementById('dictionary');
+                    table.innerHTML = '<tr><th data-sort="russian">Русское слово</th><th data-sort="english">Английский перевод</th><th data-sort="type">Тип слова</th><th data-sort="comment">Комментарий</th><th>Действия</th></tr>';
+
+                    const displayDictionary = filteredDictionary || this.dictionary;
+
+                    displayDictionary.forEach((entry, index) => {
+                        const row = table.insertRow();
+                        this.createTableCell(row, this.createInput('text', entry.russian, true));
+                        this.createTableCell(row, this.createInput('text', entry.english, true));
+                        this.createTableCell(row, this.createInput('text', entry.type, true));
+                        this.createTableCell(row, this.createInput('text', entry.comment, true));
+
+                        const cell5 = row.insertCell(4);
+                        cell5.appendChild(this.createButton('✎', 'edit-button', () => this.enableEdit(index)));
+                        cell5.appendChild(this.createButton('❌', 'delete-button', () => this.deleteWord(index)));
+                    });
+                },
+
+                createInput: function (type, value, disabled) {
+                    const input = document.createElement('input');
+                    input.type = type;
+                    input.value = value;
+                    input.disabled = disabled;
+                    return input;
+                },
+
+                createButton: function (text, className, clickHandler) {
+                    const button = document.createElement('button');
+                    button.innerText = text;
+                    button.classList.add(className);
+                    button.onclick = clickHandler;
+                    return button;
+                },
+
+                createTableCell: function (row, element) {
+                    const cell = row.insertCell();
+                    cell.appendChild(element);
+                },
+
+                sortDictionary: function (field) {
+                    this.dictionary.sort((a, b) => (a[field] > b[field]) ? 1 : -1);
+                    this.renderDictionary();
+                },
+
+                searchWord: function () {
+                    const searchInput = document.getElementById('searchInput');
+                    const searchQuery = searchInput.value.trim().toLowerCase();
+
+                    const filteredDictionary = this.dictionary.filter(entry =>
+                        entry.russian.toLowerCase().includes(searchQuery) ||
+                        entry.english.toLowerCase().includes(searchQuery) ||
+                        entry.type.toLowerCase().includes(searchQuery) ||
+                        entry.comment.toLowerCase().includes(searchQuery)
+                    );
+
+                    this.renderDictionary(filteredDictionary);
+                },
+
+                formatWord: function (word) {
+                    return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
+                },
+
+                deleteWord: function (index) {
+                    const confirmDelete = confirm('Вы уверены, что хотите удалить это слово?');
+
+                    if (confirmDelete) {
+                        this.dictionary.splice(index, 1);
+                        this.renderDictionary();
+                    }
+                },
+
+                enableEdit: function (index) {
+                    const table = document.getElementById('dictionary');
+                    const row = table.rows[index + 1];
+
+                    row.classList.add('editing-row');
+
+                    for (let i = 0; i < row.cells.length - 1; i++) {
+                        const cell = row.cells[i];
+                        const input = cell.firstChild;
+                        input.disabled = false;
+                    }
+
+                    const editButton = row.cells[row.cells.length - 1].querySelector('.edit-button');
+                    editButton.innerText = '✔';
+                    editButton.classList.remove('edit-button');
+                    editButton.classList.add('save-button');
+                    editButton.onclick = () => this.saveEdit(index);
+                },
+
+                saveEdit: function (index) {
+                    const table = document.getElementById('dictionary');
+                    const row = table.rows[index + 1];
+
+                    const russianInput = row.cells[0].firstChild;
+                    const englishInput = row.cells[1].firstChild;
+                    const typeInput = row.cells[2].firstChild;
+                    const commentInput = row.cells[3].firstChild;
+
+                    const editedRussian = this.formatWord(russianInput.value.trim());
+                    const editedEnglish = this.formatWord(englishInput.value.trim());
+                    const editedType = this.formatWord(typeInput.value.trim());
+                    const editedComment = commentInput.value.trim();
+
+                    this.dictionary[index] = { russian: editedRussian, english: editedEnglish, type: editedType, comment: editedComment };
+
+                    this.renderDictionary();
+                    row.classList.remove('editing-row');
+                },
+
+                saveDictionary: function () {
+                    const jsonContent = JSON.stringify(this.dictionary, null, 2);
+                    // Здесь отправляем данные на сервер, например, с помощью fetch или другого метода
+                    fetch('save-dictionary.php', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: jsonContent
+                    })
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Ошибка сохранения данных.');
+                        }
+                        alert('Данные сохранены успешно.');
+                    })
+                    .catch(error => {
+                        console.error('Ошибка:', error);
+                    });
+                },
+
+                loadDictionary: function () {
+                    // Здесь отправляем запрос на сервер для получения данных
+                    fetch('load-dictionary.php')
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Ошибка загрузки данных.');
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        this.dictionary = data;
+                        this.renderDictionary();
+                    })
+                    .catch(error => {
+                        console.error('Ошибка:', error);
+                    });
+                },
+
+                handleFileSelect: function (event) {
+                    const file = event.target.files[0];
+
+                    if (file) {
+                        const reader = new FileReader();
+                        reader.onload = (e) => {
+                            try {
+                                const jsonData = JSON.parse(e.target.result);
+                                if (Array.isArray(jsonData)) {
+                                    this.dictionary = jsonData;
+                                    this.renderDictionary();
+                                } else {
+                                    alert('Некорректный формат файла.');
+                                }
+                            } catch (error) {
+                                alert('Ошибка при чтении файла.');
+                            }
+                        };
+                        reader.readAsText(file);
+                    }
+                },
+
+                setupEventListeners: function () {
+                    document.getElementById('newWordButton').addEventListener('click', () => this.toggleWordForm());
+                    document.getElementById('addButton').addEventListener('click', () => this.addWord());
+                    document.getElementById('addButton').addEventListener('click', () => this.toggleWordForm());
+                    document.getElementById('saveButton').addEventListener('click', () => this.saveDictionary());
+                    document.getElementById('loadButton').addEventListener('click', () => this.loadDictionary());
+                    document.getElementById('searchInput').addEventListener('input', () => this.searchWord());
+                },
+
+                toggleWordForm: function () {
+                    const wordForm = document.getElementById('wordForm');
+                    wordForm.classList.toggle('hidden');
+                },
+            };
+
+            dictionaryApp.init();
+        });
     </script>
 
 </body>
+
 </html>
