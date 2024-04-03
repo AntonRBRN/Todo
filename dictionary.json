@@ -1,0 +1,62 @@
+[
+  {
+    "russian": "Бегать",
+    "english": "Run",
+    "type": "Глагол",
+    "comment": ""
+  },
+  {
+    "russian": "Дверь",
+    "english": "Door",
+    "type": "Существительное",
+    "comment": ""
+  },
+  {
+    "russian": "Дерево",
+    "english": "Tree",
+    "type": "Существительное",
+    "comment": ""
+  },
+  {
+    "russian": "Красивый",
+    "english": "Beautiful",
+    "type": "Существительное",
+    "comment": ""
+  },
+  {
+    "russian": "Мама",
+    "english": "Mother",
+    "type": "Существительное",
+    "comment": ""
+  },
+  {
+    "russian": "Молоко",
+    "english": "Milk",
+    "type": "Существительное",
+    "comment": ""
+  },
+  {
+    "russian": "Открывал",
+    "english": "Opened",
+    "type": "Глагол",
+    "comment": "прошедшее время глагола \"открывать\""
+  },
+  {
+    "russian": "Открывать",
+    "english": "Open",
+    "type": "Глагол",
+    "comment": ""
+  },
+  {
+    "russian": "Плавать",
+    "english": "Swim",
+    "type": "Глагол",
+    "comment": ""
+  },
+  {
+    "russian": "Птица",
+    "english": "Bird",
+    "type": "Существительное",
+    "comment": ""
+  }
+]
